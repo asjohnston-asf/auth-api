@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+
+  URS_HOSTNAME:
+    Type: String
+    AllowedValues:
+    - https://urs.earthdata.nasa.gov
+    - https://uat.urs.earthdata.nasa.gov
+    Default: https://urs.earthdata.nasa.gov
+
+  URS_TOKEN_URI:
+    Type: String
+    Default: /oauth/token
+
+  URS_CLIENT_ID:
+    Type: String
+
+  URS_CLIENT_PASSWORD:
+    Type: String
+    NoEcho: true
+
+  URS_REDIRECT_URI:
+    Type: String
+
+  COOKIE_DOMAIN:
+    Type: String
+    Default: .asf.alaska.edu
+
+  COOKIE_DURATION_IN_SECONDS:
+    Type: Number
+    MinValue: 0
+    Default: 86400
+
+  PRIVATE_KEY:
+    Type: String
+    NoEcho: true
+
+Outputs:
+
+  LambdaArn:
+    Value: !GetAtt Lambda.Arn
+
+Resources:
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${NAME}-dlq"
+      MessageRetentionPeriod: 1209600
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${NAME}"
+      RetentionInDays: 30
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref NAME
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Action: sts:AssumeRole
+          Principal:
+            Service: lambda.amazonaws.com
+          Effect: Allow
+      Policies:
+      - PolicyName: policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !GetAtt LogGroup.Arn
+          - Effect: Allow
+            Action: sqs:SendMessage
+            Resource: !GetAtt DeadLetterQueue.Arn
+
+  Lambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref NAME
+      Code: src/
+      DeadLetterConfig:
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+      Environment:
+        Variables:
+          URS_HOSTNAME: !Ref URS_HOSTNAME
+          URS_TOKEN_URI: !Ref URS_TOKEN_URI
+          URS_CLIENT_ID: !Ref URS_CLIENT_ID
+          URS_CLIENT_PASSWORD: !Ref URS_CLIENT_PASSWORD
+          URS_REDIRECT_URI: !Ref URS_REDIRECT_URI
+          COOKIE_DOMAIN: !Ref COOKIE_DOMAIN
+          COOKIE_DURATION_IN_SECONDS: !Ref COOKIE_DURATION_IN_SECONDS
+          PRIVATE_KEY: !Ref PRIVATE_KEY
+      Handler: main.lambda_handler
+      MemorySize: 128
+      Role: !GetAtt Role.Arn
+      Runtime: python3.7
+      Timeout: 30

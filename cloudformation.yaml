@@ -1,0 +1,133 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+
+  URS_HOSTNAME:
+    Type: String
+    AllowedValues:
+    - https://urs.earthdata.nasa.gov
+    - https://uat.urs.earthdata.nasa.gov
+    Default: https://urs.earthdata.nasa.gov
+
+  URS_TOKEN_URI:
+    Type: String
+    Default: /oauth/token
+
+  URS_CLIENT_ID:
+    Type: String
+
+  URS_CLIENT_PASSWORD:
+    Type: String
+    NoEcho: true
+
+  COOKIE_DOMAIN:
+    Type: String
+    Default: .asf.alaska.edu
+
+  COOKIE_DURATION_IN_SECONDS:
+    Type: Number
+    MinValue: 0
+    Default: 86400
+
+  PRIVATE_KEY:
+    Type: String
+    NoEcho: true
+
+  DOMAIN_NAME:
+    Type: String
+
+  CERTIFICATE_ARN:
+    Type: String
+
+Outputs:
+
+  ApiEndpoint:
+    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+
+Resources:
+
+  OauthStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        NAME: !Sub "${AWS::StackName}-oauth"
+        URS_HOSTNAME: !Ref URS_HOSTNAME
+        URS_TOKEN_URI: !Ref URS_TOKEN_URI
+        URS_CLIENT_ID: !Ref URS_CLIENT_ID
+        URS_CLIENT_PASSWORD: !Ref URS_CLIENT_PASSWORD
+        URS_REDIRECT_URI: !Sub "https://${DOMAIN_NAME}/oauth"
+        COOKIE_DOMAIN: !Ref COOKIE_DOMAIN
+        COOKIE_DURATION_IN_SECONDS: !Ref COOKIE_DURATION_IN_SECONDS
+        PRIVATE_KEY: !Ref PRIVATE_KEY
+      TemplateURL: oauth/cloudformation.yaml
+
+  CustomDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DOMAIN_NAME
+      CertificateArn: !Ref CERTIFICATE_ARN
+
+  BasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref CustomDomainName
+      RestApiId: !Ref RestApi
+
+  RestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Ref AWS::StackName
+      Body:
+        openapi: 3.0.1
+        info:
+          title: oauth
+          version: 0.0.1
+        paths:
+          /oauth:
+            get:
+              parameters:
+              - name: code
+                in: query
+                required: true
+              - name: state
+                in: query
+                required: true
+              responses:
+                '307':
+                  description: success
+                default:
+                  description: error
+              x-amazon-apigateway-request-validator: parameters-only
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OauthStack.Outputs.LambdaArn}/invocations"
+                contentHandling: CONVERT_TO_TEXT
+                httpMethod: POST
+                passthroughBehvaior: when_no_match
+                responses:
+                  default:
+                    statusCode: 200
+        x-amazon-apigateway-request-validators:
+          parameters-only:
+            validateRequestParameters: true
+            validateRequestBody: false
+
+  DeploymentREPLACE_ME:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref RestApi
+
+  Stage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: oauth
+      RestApiId: !Ref RestApi
+      DeploymentId: !Ref DeploymentREPLACE_ME
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt ReformatStack.Outputs.LambdaArn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*"
