@@ -2,37 +2,40 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
 
-  URS_HOSTNAME:
+  Name:
+    Type: String
+
+  UrsHostname:
     Type: String
     AllowedValues:
     - https://urs.earthdata.nasa.gov
     - https://uat.urs.earthdata.nasa.gov
     Default: https://urs.earthdata.nasa.gov
 
-  URS_TOKEN_URI:
+  UrsTokenUri:
     Type: String
     Default: /oauth/token
 
-  URS_CLIENT_ID:
+  UrsClientId:
     Type: String
 
-  URS_CLIENT_PASSWORD:
+  UrsClientPassword:
     Type: String
     NoEcho: true
 
-  URS_REDIRECT_URI:
+  UrsRedirectUri:
     Type: String
 
-  COOKIE_DOMAIN:
+  CookieDomain:
     Type: String
     Default: .asf.alaska.edu
 
-  COOKIE_DURATION_IN_SECONDS:
+  CookieDurationInSeconds:
     Type: Number
     MinValue: 0
     Default: 86400
 
-  PRIVATE_KEY:
+  PrivateKey:
     Type: String
     NoEcho: true
 
@@ -46,19 +49,19 @@ Resources:
   DeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: !Sub "${NAME}-dlq"
+      QueueName: !Sub "${Name}-dlq"
       MessageRetentionPeriod: 1209600
 
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${NAME}"
+      LogGroupName: !Sub "/aws/lambda/${Name}"
       RetentionInDays: 30
 
   Role:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Ref NAME
+      RoleName: !Ref Name
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -83,20 +86,20 @@ Resources:
   Lambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Ref NAME
+      FunctionName: !Ref Name
       Code: src/
       DeadLetterConfig:
         TargetArn: !GetAtt DeadLetterQueue.Arn
       Environment:
         Variables:
-          URS_HOSTNAME: !Ref URS_HOSTNAME
-          URS_TOKEN_URI: !Ref URS_TOKEN_URI
-          URS_CLIENT_ID: !Ref URS_CLIENT_ID
-          URS_CLIENT_PASSWORD: !Ref URS_CLIENT_PASSWORD
-          URS_REDIRECT_URI: !Ref URS_REDIRECT_URI
-          COOKIE_DOMAIN: !Ref COOKIE_DOMAIN
-          COOKIE_DURATION_IN_SECONDS: !Ref COOKIE_DURATION_IN_SECONDS
-          PRIVATE_KEY: !Ref PRIVATE_KEY
+          URS_HOSTNAME: !Ref UrsHostname
+          URS_TOKEN_URI: !Ref UrsTokenUri
+          URS_CLIENT_ID: !Ref UrsClientId
+          URS_CLIENT_PASSWORD: !Ref UrsClientPassword
+          URS_REDIRECT_URI: !Ref UrsRedirectUri
+          COOKIE_DOMAIN: !Ref CookieDomain
+          COOKIE_DURATION_IN_SECONDS: !Ref CookieDurationInSeconds
+          PRIVATE_KEY: !Ref PrivateKey
       Handler: main.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn

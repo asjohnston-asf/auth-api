@@ -2,41 +2,41 @@ AWSTemplateFormatVersion: 2010-09-09
 
 Parameters:
 
-  URS_HOSTNAME:
+  UrsHostname:
     Type: String
     AllowedValues:
     - https://urs.earthdata.nasa.gov
     - https://uat.urs.earthdata.nasa.gov
     Default: https://urs.earthdata.nasa.gov
 
-  URS_TOKEN_URI:
+  UrsTokenUri:
     Type: String
     Default: /oauth/token
 
-  URS_CLIENT_ID:
+  UrsClientId:
     Type: String
 
-  URS_CLIENT_PASSWORD:
+  UrsClientPassword:
     Type: String
     NoEcho: true
 
-  COOKIE_DOMAIN:
+  CookieDomain:
     Type: String
     Default: .asf.alaska.edu
 
-  COOKIE_DURATION_IN_SECONDS:
+  CookieDurationInSeconds:
     Type: Number
     MinValue: 0
     Default: 86400
 
-  PRIVATE_KEY:
+  PrivateKey:
     Type: String
     NoEcho: true
 
-  DOMAIN_NAME:
+  DomainName:
     Type: String
 
-  CERTIFICATE_ARN:
+  CertificateArn:
     Type: String
 
 Outputs:
@@ -50,22 +50,22 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        NAME: !Sub "${AWS::StackName}-oauth"
-        URS_HOSTNAME: !Ref URS_HOSTNAME
-        URS_TOKEN_URI: !Ref URS_TOKEN_URI
-        URS_CLIENT_ID: !Ref URS_CLIENT_ID
-        URS_CLIENT_PASSWORD: !Ref URS_CLIENT_PASSWORD
-        URS_REDIRECT_URI: !Sub "https://${DOMAIN_NAME}/oauth"
-        COOKIE_DOMAIN: !Ref COOKIE_DOMAIN
-        COOKIE_DURATION_IN_SECONDS: !Ref COOKIE_DURATION_IN_SECONDS
-        PRIVATE_KEY: !Ref PRIVATE_KEY
+        Name: !Sub "${AWS::StackName}-oauth"
+        UrsHostname: !Ref UrsHostname
+        UrsTokenUri: !Ref UrsTokenUri
+        UrsClientId: !Ref UrsClientId
+        UrsClientPassword: !Ref UrsClientPassword
+        UrsRedirectUri: !Sub "https://${DomainName}/oauth"
+        CookieDomain: !Ref CookieDomain
+        CookieDurationInSeconds: !Ref CookieDurationInSeconds
+        PrivateKey: !Ref PrivateKey
       TemplateURL: oauth/cloudformation.yaml
 
   CustomDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Ref DOMAIN_NAME
-      CertificateArn: !Ref CERTIFICATE_ARN
+      DomainName: !Ref DomainName
+      CertificateArn: !Ref CertificateArn
 
   BasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -127,7 +127,7 @@ Resources:
   LambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt ReformatStack.Outputs.LambdaArn
+      FunctionName: !GetAtt OauthStack.Outputs.LambdaArn
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApi}/*"
