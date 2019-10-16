@@ -1,18 +1,21 @@
 from os import environ
+from datetime import datetime, timedelta
+from http.cookies import SimpleCookie
+import requests
 import jwt
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import InvalidGrantError
-from requests import Session
 
 
-URS_HOSTNAME = os.environ['URS_HOSTNAME']
-URS_TOKEN_URI = os.environ['URS_TOKEN_URI']
-URS_CLIENT_ID = os.environ['URS_CLIENT_ID']
-URS_CLIENT_PASSWORD = os.environ['URS_CLIENT_PASSWORD']
-URS_REDIRECT_URI = os.environ['URS_REDIRECT_URI']
-COOKIE_DOMAIN = os.environ['COOKIE_DOMAIN']
-COOKIE_DURATION_IN_SECONDS = os.environ['COOKIE_DURATION_IN_SECONDS']
-PRIVATE_KEY = os.environ['PRIVATE_KEY']
+URS_HOSTNAME = environ['URS_HOSTNAME']
+URS_TOKEN_URI = environ['URS_TOKEN_URI']
+URS_CLIENT_ID = environ['URS_CLIENT_ID']
+URS_CLIENT_PASSWORD = environ['URS_CLIENT_PASSWORD']
+URS_REDIRECT_URI = environ['URS_REDIRECT_URI']
+COOKIE_NAME = environ['COOKIE_NAME']
+COOKIE_DOMAIN = environ['COOKIE_DOMAIN']
+COOKIE_DURATION_IN_SECONDS = environ['COOKIE_DURATION_IN_SECONDS']
+PRIVATE_KEY = environ['PRIVATE_KEY']
 
 URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
 
@@ -24,7 +27,7 @@ def get_400_response():
     }
 
 
-def get_redirect_response(url ,token):
+def get_redirect_response(url, token):
     return {
         'statusCode': 307,
         'headers': {
@@ -46,6 +49,7 @@ def get_cookie_string(token):
 def get_urs_token(code):
     token_uri = URS_HOSTNAME + URS_TOKEN_URI
     urs_token = URS.fetch_token(token_uri, code=code, client_secret=URS_CLIENT_PASSWORD)
+    return urs_token
 
 
 def get_user(urs_token):
@@ -53,15 +57,15 @@ def get_user(urs_token):
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
     response = requests.get(user_profile_uri, headers={'Authorization': auth_string})
     response.raise_for_status()
-    return reponse.json
+    return response.json
 
 
 def get_token(user):
     expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
     payload = {
-      'username': user['username'],
-      'restricted_data_use_agreement': False,
-      'exp': expiration_time.strftime('%s'),
+        'username': user['username'],
+        'restricted_data_use_agreement': False,
+        'exp': expiration_time.strftime('%s'),
     }
     token = jwt.encode(payload, PRIVATE_KEY, 'RS256')
     return token
