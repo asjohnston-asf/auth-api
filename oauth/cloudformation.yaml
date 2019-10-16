@@ -26,6 +26,10 @@ Parameters:
   UrsRedirectUri:
     Type: String
 
+  CookieName:
+    Type: String
+    Default: datapool-session
+
   CookieDomain:
     Type: String
     Default: .asf.alaska.edu
@@ -97,6 +101,7 @@ Resources:
           URS_CLIENT_ID: !Ref UrsClientId
           URS_CLIENT_PASSWORD: !Ref UrsClientPassword
           URS_REDIRECT_URI: !Ref UrsRedirectUri
+          COOKIE_NAME: !Ref CookieName
           COOKIE_DOMAIN: !Ref CookieDomain
           COOKIE_DURATION_IN_SECONDS: !Ref CookieDurationInSeconds
           PRIVATE_KEY: !Ref PrivateKey

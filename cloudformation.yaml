@@ -20,6 +20,10 @@ Parameters:
     Type: String
     NoEcho: true
 
+  CookieName:
+    Type: String
+    Default: datapool-session
+
   CookieDomain:
     Type: String
     Default: .asf.alaska.edu
@@ -56,6 +60,7 @@ Resources:
         UrsClientId: !Ref UrsClientId
         UrsClientPassword: !Ref UrsClientPassword
         UrsRedirectUri: !Sub "https://${DomainName}/oauth"
+        CookieName: !Ref CookieName
         CookieDomain: !Ref CookieDomain
         CookieDurationInSeconds: !Ref CookieDurationInSeconds
         PrivateKey: !Ref PrivateKey
