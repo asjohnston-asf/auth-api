@@ -24,10 +24,10 @@ URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
 SESSION = Session()
 
 
-def get_400_response():
+def get_error_response(status_code, message):
     return {
-        'statusCode': 400,
-        'body': 'The provided authorization code is invalid.',
+        'statusCode': status_code,
+        'body': message,
     }
 
 
@@ -88,9 +88,8 @@ def lambda_handler(event, context):
 
     try:
         urs_token = get_urs_token(parms['code'])
-    except InvalidGrantError:
-        #TODO pass exception message
-        return get_400_response()
+    except InvalidGrantError as e:
+        return get_error_response(401, e.description)
 
     #TODO catch connection errors
     user = get_user(urs_token)
