@@ -14,7 +14,7 @@ URS_CLIENT_PASSWORD = environ['URS_CLIENT_PASSWORD']
 URS_REDIRECT_URI = environ['URS_REDIRECT_URI']
 COOKIE_NAME = environ['COOKIE_NAME']
 COOKIE_DOMAIN = environ['COOKIE_DOMAIN']
-COOKIE_DURATION_IN_SECONDS = environ['COOKIE_DURATION_IN_SECONDS']
+COOKIE_DURATION_IN_SECONDS = int(environ['COOKIE_DURATION_IN_SECONDS'])
 PRIVATE_KEY = environ['PRIVATE_KEY']
 
 URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
@@ -47,34 +47,42 @@ def get_cookie_string(token):
 
 
 def get_urs_token(code):
+    print(code)
     token_uri = URS_HOSTNAME + URS_TOKEN_URI
     urs_token = URS.fetch_token(token_uri, code=code, client_secret=URS_CLIENT_PASSWORD)
     return urs_token
 
 
 def get_user(urs_token):
+    print(urs_token)
     user_profile_uri = URS_HOSTNAME + urs_token['endpoint']
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
     response = requests.get(user_profile_uri, headers={'Authorization': auth_string})
     response.raise_for_status()
-    return response.json
+    return response.json()
+
+
+def get_restricted_data_use_agreement(user):
+    for group in user['user_groups']:
+        if group['client_id'] == URS_CLIENT_ID and group['name'] == 'DAAC_DATAPOOL':
+            return True
+    return False
 
 
 def get_token(user):
+    print(user)
     expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
     payload = {
-        'username': user['username'],
-        'restricted_data_use_agreement': False,
+        'username': user['uid'],
+        'restricted_data_use_agreement': get_restricted_data_use_agreement(user),
         'exp': expiration_time.strftime('%s'),
     }
-    token = jwt.encode(payload, PRIVATE_KEY, 'RS256')
+    token = jwt.encode(payload, PRIVATE_KEY, 'HS256')
     return token
 
 
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
-    if not parms.get('code') or not parms.get('state'):
-        return get_400_response()
 
     try:
         urs_token = get_urs_token(parms['code'])

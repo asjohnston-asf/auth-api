@@ -66,17 +66,17 @@ Resources:
         PrivateKey: !Ref PrivateKey
       TemplateURL: oauth/cloudformation.yaml
 
-  CustomDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Ref DomainName
-      CertificateArn: !Ref CertificateArn
+      #  CustomDomainName:
+      #    Type: AWS::ApiGateway::DomainName
+      #    Properties:
+      #      DomainName: !Ref DomainName
+      #      CertificateArn: !Ref CertificateArn
 
-  BasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !Ref CustomDomainName
-      RestApiId: !Ref RestApi
+      #  BasePathMapping:
+      #    Type: AWS::ApiGateway::BasePathMapping
+      #    Properties:
+      #      DomainName: !Ref CustomDomainName
+      #      RestApiId: !Ref RestApi
 
   RestApi:
     Type: AWS::ApiGateway::RestApi
@@ -88,7 +88,7 @@ Resources:
           title: oauth
           version: 0.0.1
         paths:
-          /oauth:
+          /:
             get:
               parameters:
               - name: code
