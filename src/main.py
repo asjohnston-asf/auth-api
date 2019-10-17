@@ -84,12 +84,15 @@ def get_token(user):
 
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
+    #TODO handle error=&error_msg= case
 
     try:
         urs_token = get_urs_token(parms['code'])
     except InvalidGrantError:
+        #TODO pass exception message
         return get_400_response()
 
+    #TODO catch connection errors
     user = get_user(urs_token)
     token = get_token(user)
 
