@@ -66,6 +66,25 @@ Outputs:
 
 Resources:
 
+  Secret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Ref AWS::StackName
+      SecretString: !Sub |-
+        {
+          "UrsHostname": "${UrsHostname}",
+          "UrsTokenUri": "${UrsTokenUri}",
+          "UrsClientId": "${UrsClientId}",
+          "UrsClientPassword": "${UrsClientPassword}",
+          "UrsRedirectUri": "https://${DomainName}/oauth",
+          "UrsGroupName": "${UrsGroupName}",
+          "CookieName": "${CookieName}",
+          "CookieDomain": "${CookieDomain}",
+          "CookieDurationInSeconds": ${CookieDurationInSeconds},
+          "JwtKey": "${JwtKey}",
+          "JwtAlgorithm": "${JwtAlgorithm}"
+        }
+
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -93,6 +112,9 @@ Resources:
             - logs:CreateLogStream
             - logs:PutLogEvents
             Resource: !GetAtt LogGroup.Arn
+          - Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: !Ref Secret
 
   Lambda:
     Type: AWS::Lambda::Function
@@ -101,17 +123,7 @@ Resources:
       Code: src/
       Environment:
         Variables:
-          URS_HOSTNAME: !Ref UrsHostname
-          URS_TOKEN_URI: !Ref UrsTokenUri
-          URS_CLIENT_ID: !Ref UrsClientId
-          URS_CLIENT_PASSWORD: !Ref UrsClientPassword
-          URS_REDIRECT_URI: !Sub "https://${DomainName}/oauth"
-          URS_GROUP_NAME: !Ref UrsGroupName
-          COOKIE_NAME: !Ref CookieName
-          COOKIE_DOMAIN: !Ref CookieDomain
-          COOKIE_DURATION_IN_SECONDS: !Ref CookieDurationInSeconds
-          JWT_KEY: !Ref JwtKey
-          JWT_ALGORITHM: !Ref JwtAlgorithm
+          CONFIG_SECRET_ARN: !Ref Secret
       Handler: main.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn

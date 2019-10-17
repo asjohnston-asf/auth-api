@@ -2,25 +2,19 @@ from os import environ
 from datetime import datetime, timedelta
 from http.cookies import SimpleCookie
 from urllib.parse import urljoin
+from json import loads
+from boto3 import client
 from requests import Session
 import jwt
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import InvalidGrantError
 
 
-URS_HOSTNAME = environ['URS_HOSTNAME']
-URS_TOKEN_URI = environ['URS_TOKEN_URI']
-URS_CLIENT_ID = environ['URS_CLIENT_ID']
-URS_CLIENT_PASSWORD = environ['URS_CLIENT_PASSWORD']
-URS_REDIRECT_URI = environ['URS_REDIRECT_URI']
-URS_GROUP_NAME = environ['URS_GROUP_NAME']
-COOKIE_NAME = environ['COOKIE_NAME']
-COOKIE_DOMAIN = environ['COOKIE_DOMAIN']
-COOKIE_DURATION_IN_SECONDS = int(environ['COOKIE_DURATION_IN_SECONDS'])
-JWT_KEY = environ['JWT_KEY']
-JWT_ALGORITHM = environ['JWT_ALGORITHM']
+SECRETS_MANAGER = client('secretsmanager')
+SECRET = SECRETS_MANAGER.get_secret_value(SecretId=environ['CONFIG_SECRET_ARN'])
+CONFIG = loads(SECRET['SecretString'])
 
-URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
+URS = OAuth2Session(CONFIG['UrsClientId'], redirect_uri=CONFIG['UrsRedirectUri'])
 SESSION = Session()
 
 
@@ -48,20 +42,20 @@ def redirect_response(url, token):
 
 def get_cookie_string(token):
     cookie = SimpleCookie()
-    cookie[COOKIE_NAME] = token
-    cookie[COOKIE_NAME]['expires'] = COOKIE_DURATION_IN_SECONDS
-    cookie[COOKIE_NAME]['domain'] = COOKIE_DOMAIN
+    cookie[CONFIG['CookieName']] = token
+    cookie[CONFIG['CookieName']]['expires'] = CONFIG['CookieDurationInSeconds']
+    cookie[CONFIG['CookieName']]['domain'] = CONFIG['CookieDomain']
     return cookie.output(header='')
 
 
 def get_urs_token(code):
-    token_uri = urljoin(URS_HOSTNAME, URS_TOKEN_URI)
-    urs_token = URS.fetch_token(token_uri, code=code, client_secret=URS_CLIENT_PASSWORD)
+    token_uri = urljoin(CONFIG['UrsHostname'], CONFIG['UrsTokenUri'])
+    urs_token = URS.fetch_token(token_uri, code=code, client_secret=CONFIG['UrsClientPassword'])
     return urs_token
 
 
 def get_user(urs_token):
-    user_profile_uri = urljoin(URS_HOSTNAME, urs_token['endpoint'])
+    user_profile_uri = urljoin(CONFIG['UrsHostname'], urs_token['endpoint'])
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
     response = SESSION.get(user_profile_uri, headers={'Authorization': auth_string})
     response.raise_for_status()
@@ -70,13 +64,13 @@ def get_user(urs_token):
 
 def get_restricted_data_use_agreement(user):
     for group in user['user_groups']:
-        if group['client_id'] == URS_CLIENT_ID and group['name'] == URS_GROUP_NAME:
+        if group['client_id'] == CONFIG['UrsClientId'] and group['name'] == CONFIG['UrsGroupName']:
             return True
     return False
 
 
 def get_token_payload(user):
-    expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
+    expiration_time = datetime.utcnow() + timedelta(seconds=CONFIG['CookieDurationInSeconds'])
     payload = {
         'user-id': user['uid'],
         'restricted-data-use-agreement': get_restricted_data_use_agreement(user),
@@ -108,6 +102,6 @@ def lambda_handler(event, context):
     user = get_user(urs_token)
     token_payload = get_token_payload(user)
     print(f"Token payload: {token_payload}")
-    token = jwt.encode(token_payload, JWT_KEY, JWT_ALGORITHM).decode()
+    token = jwt.encode(token_payload, CONFIG['JwtKey'], CONFIG['JwtAlgorithm']).decode()
 
     return redirect_response(parms['state'], token)
