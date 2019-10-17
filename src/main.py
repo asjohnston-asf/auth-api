@@ -12,6 +12,7 @@ URS_TOKEN_URI = environ['URS_TOKEN_URI']
 URS_CLIENT_ID = environ['URS_CLIENT_ID']
 URS_CLIENT_PASSWORD = environ['URS_CLIENT_PASSWORD']
 URS_REDIRECT_URI = environ['URS_REDIRECT_URI']
+URS_GROUP_NAME = environ['URS_GROUP_NAME']
 COOKIE_NAME = environ['COOKIE_NAME']
 COOKIE_DOMAIN = environ['COOKIE_DOMAIN']
 COOKIE_DURATION_IN_SECONDS = int(environ['COOKIE_DURATION_IN_SECONDS'])
@@ -63,7 +64,7 @@ def get_user(urs_token):
 
 def get_restricted_data_use_agreement(user):
     for group in user['user_groups']:
-        if group['client_id'] == URS_CLIENT_ID and group['name'] == 'DAAC_DATAPOOL':
+        if group['client_id'] == URS_CLIENT_ID and group['name'] == URS_GROUP_NAME:
             return True
     return False
 

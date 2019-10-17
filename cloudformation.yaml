@@ -20,6 +20,10 @@ Parameters:
     Type: String
     NoEcho: true
 
+  UrsGroupName:
+    Type: String
+    Default: DAAC_DATAPOOL
+
   CookieName:
     Type: String
     Default: datapool-session
@@ -90,6 +94,7 @@ Resources:
           URS_CLIENT_ID: !Ref UrsClientId
           URS_CLIENT_PASSWORD: !Ref UrsClientPassword
           URS_REDIRECT_URI: !Sub "https://${DomainName}/oauth"
+          URS_GROUP_NAME: !Ref UrsGroupName
           COOKIE_NAME: !Ref CookieName
           COOKIE_DOMAIN: !Ref CookieDomain
           COOKIE_DURATION_IN_SECONDS: !Ref CookieDurationInSeconds
