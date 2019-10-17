@@ -74,8 +74,8 @@ def get_restricted_data_use_agreement(user):
 def get_token(user):
     expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
     payload = {
-        'username': user['uid'],
-        'restricted_data_use_agreement': get_restricted_data_use_agreement(user),
+        'user-id': user['uid'],
+        'restricted-data-use-agreement': get_restricted_data_use_agreement(user),
         'exp': expiration_time.strftime('%s'),
     }
     token = jwt.encode(payload, JWT_KEY, JWT_ALGORITHM)
