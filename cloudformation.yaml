@@ -62,7 +62,7 @@ Parameters:
 Outputs:
 
   ApiEndpoint:
-    Value: !Sub "https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+    Value: !Sub "https://${DomainName}/${Stage}/"
 
 Resources:
 
