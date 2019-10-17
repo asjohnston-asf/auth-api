@@ -1,6 +1,7 @@
 from os import environ
 from datetime import datetime, timedelta
 from http.cookies import SimpleCookie
+from urllib.parse import urljoin
 from requests import Session
 import jwt
 from requests_oauthlib import OAuth2Session
@@ -49,7 +50,7 @@ def get_cookie_string(token):
 
 
 def get_urs_token(code):
-    token_uri = URS_HOSTNAME + URS_TOKEN_URI
+    token_uri = urljoin(URS_HOSTNAME, URS_TOKEN_URI)
     urs_token = URS.fetch_token(token_uri, code=code, client_secret=URS_CLIENT_PASSWORD)
     return urs_token
 
