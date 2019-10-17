@@ -87,8 +87,17 @@ def get_token_payload(user):
 
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
+    if parms is None:
+        parms = {}
     print(f"Parameters: {parms}")
-    #TODO handle error=&error_msg= case
+
+    if 'error' in parms:
+        return error_response(401, parms.get('error_msg'))
+
+    if 'code' not in parms:
+        return error_response(400, 'Missing required parameter: code')
+    if 'state' not in parms:
+        return error_response(400, 'Missing required parameter: state')
 
     try:
         urs_token = get_urs_token(parms['code'])

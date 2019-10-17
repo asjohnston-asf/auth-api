@@ -145,10 +145,16 @@ Resources:
               parameters:
               - name: code
                 in: query
-                required: true
+                required: false
               - name: state
                 in: query
-                required: true
+                required: false
+              - name: error
+                in: query
+                required: false
+              - name: error_msg
+                in: query
+                required: false
               responses:
                 '307':
                   description: success
