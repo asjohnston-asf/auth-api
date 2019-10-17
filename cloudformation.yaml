@@ -26,7 +26,7 @@ Parameters:
 
   CookieDomain:
     Type: String
-    Default: .asf.alaska.edu
+    Default: asf.alaska.edu
 
   CookieDurationInSeconds:
     Type: Number

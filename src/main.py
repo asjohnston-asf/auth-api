@@ -1,7 +1,7 @@
 from os import environ
 from datetime import datetime, timedelta
 from http.cookies import SimpleCookie
-import requests
+from requests import Session
 import jwt
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import InvalidGrantError
@@ -18,6 +18,7 @@ COOKIE_DURATION_IN_SECONDS = int(environ['COOKIE_DURATION_IN_SECONDS'])
 PRIVATE_KEY = environ['PRIVATE_KEY']
 
 URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
+SESSION = Session()
 
 
 def get_400_response():
@@ -55,7 +56,7 @@ def get_urs_token(code):
 def get_user(urs_token):
     user_profile_uri = URS_HOSTNAME + urs_token['endpoint']
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
-    response = requests.get(user_profile_uri, headers={'Authorization': auth_string})
+    response = SESSION.get(user_profile_uri, headers={'Authorization': auth_string})
     response.raise_for_status()
     return response.json()
 
