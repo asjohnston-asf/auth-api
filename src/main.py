@@ -29,7 +29,7 @@ def error_response(status_code, message):
         'statusCode': status_code,
         'body': message,
     }
-    print(response)
+    print(f"Response: {response}")
     return response
 
 
@@ -42,7 +42,7 @@ def redirect_response(url, token):
         },
         'body': None,
     }
-    print(response)
+    print(f"Response: {response}")
     return response
 
 
@@ -87,7 +87,7 @@ def get_token_payload(user):
 
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
-    print(parms)
+    print(f"Parameters: {parms}")
     #TODO handle error=&error_msg= case
 
     try:
@@ -98,7 +98,7 @@ def lambda_handler(event, context):
     #TODO catch connection errors
     user = get_user(urs_token)
     token_payload = get_token_payload(user)
-    print(token_payload)
+    print(f"Token payload: {token_payload}")
     token = jwt.encode(token_payload, JWT_KEY, JWT_ALGORITHM).decode()
 
     return redirect_response(parms['state'], token)
