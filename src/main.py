@@ -85,6 +85,7 @@ def get_token(user):
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
     #TODO handle error=&error_msg= case
+    #TODO log input, token payload, response?
 
     try:
         urs_token = get_urs_token(parms['code'])
