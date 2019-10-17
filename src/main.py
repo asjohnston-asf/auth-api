@@ -62,18 +62,11 @@ def get_user(urs_token):
     return response.json()
 
 
-def get_restricted_data_use_agreement(user):
-    for group in user['user_groups']:
-        if group['client_id'] == CONFIG['UrsClientId'] and group['name'] == CONFIG['UrsGroupName']:
-            return True
-    return False
-
-
 def get_token_payload(user):
     expiration_time = datetime.utcnow() + timedelta(seconds=CONFIG['CookieDurationInSeconds'])
     payload = {
         'user-id': user['uid'],
-        'restricted-data-use-agreement': get_restricted_data_use_agreement(user),
+        'groups': [group['name'] for group in user['user_groups'] if group['client_id'] == CONFIG['UrsClientId']],
         'exp': expiration_time.strftime('%s'),
     }
     return payload
