@@ -57,7 +57,7 @@ def get_urs_token(code):
 
 
 def get_user(urs_token):
-    user_profile_uri = URS_HOSTNAME + urs_token['endpoint']
+    user_profile_uri = urljoin(URS_HOSTNAME, urs_token['endpoint'])
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
     response = SESSION.get(user_profile_uri, headers={'Authorization': auth_string})
     response.raise_for_status()
