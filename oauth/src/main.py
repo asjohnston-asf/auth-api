@@ -47,14 +47,12 @@ def get_cookie_string(token):
 
 
 def get_urs_token(code):
-    print(code)
     token_uri = URS_HOSTNAME + URS_TOKEN_URI
     urs_token = URS.fetch_token(token_uri, code=code, client_secret=URS_CLIENT_PASSWORD)
     return urs_token
 
 
 def get_user(urs_token):
-    print(urs_token)
     user_profile_uri = URS_HOSTNAME + urs_token['endpoint']
     auth_string = urs_token['token_type'] + ' ' + urs_token['access_token']
     response = requests.get(user_profile_uri, headers={'Authorization': auth_string})
@@ -70,7 +68,6 @@ def get_restricted_data_use_agreement(user):
 
 
 def get_token(user):
-    print(user)
     expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
     payload = {
         'username': user['uid'],
