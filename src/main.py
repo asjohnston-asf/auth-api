@@ -36,6 +36,7 @@ def get_redirect_response(url, token):
         'statusCode': 307,
         'headers': {
             'Location': url,
+            #TODO decode final cookie string
             'Set-Cookie': get_cookie_string(token),
         },
         'body': None,
