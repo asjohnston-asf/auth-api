@@ -17,7 +17,8 @@ URS_GROUP_NAME = environ['URS_GROUP_NAME']
 COOKIE_NAME = environ['COOKIE_NAME']
 COOKIE_DOMAIN = environ['COOKIE_DOMAIN']
 COOKIE_DURATION_IN_SECONDS = int(environ['COOKIE_DURATION_IN_SECONDS'])
-PRIVATE_KEY = environ['PRIVATE_KEY']
+JWT_KEY = environ['JWT_KEY']
+JWT_ALGORITHM = environ['JWT_ALGORITHM']
 
 URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
 SESSION = Session()
@@ -77,7 +78,7 @@ def get_token(user):
         'restricted_data_use_agreement': get_restricted_data_use_agreement(user),
         'exp': expiration_time.strftime('%s'),
     }
-    token = jwt.encode(payload, PRIVATE_KEY, 'HS256')
+    token = jwt.encode(payload, JWT_KEY, JWT_ALGORITHM)
     return token
 
 

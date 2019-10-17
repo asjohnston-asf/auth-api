@@ -37,9 +37,16 @@ Parameters:
     MinValue: 0
     Default: 86400
 
-  PrivateKey:
+  JwtKey:
     Type: String
     NoEcho: true
+
+  JwtAlgorithm:
+    Type: String
+    AllowedValues:
+    - RS256
+    - HS256
+    Default: RS256
 
   DomainName:
     Type: String
@@ -98,7 +105,8 @@ Resources:
           COOKIE_NAME: !Ref CookieName
           COOKIE_DOMAIN: !Ref CookieDomain
           COOKIE_DURATION_IN_SECONDS: !Ref CookieDurationInSeconds
-          PRIVATE_KEY: !Ref PrivateKey
+          JWT_KEY: !Ref JwtKey
+          JWT_ALGORITHM: !Ref JwtAlgorithm
       Handler: main.lambda_handler
       MemorySize: 128
       Role: !GetAtt Role.Arn
