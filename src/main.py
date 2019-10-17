@@ -24,15 +24,17 @@ URS = OAuth2Session(URS_CLIENT_ID, redirect_uri=URS_REDIRECT_URI)
 SESSION = Session()
 
 
-def get_error_response(status_code, message):
-    return {
+def error_response(status_code, message):
+    response = {
         'statusCode': status_code,
         'body': message,
     }
+    print(response)
+    return response
 
 
-def get_redirect_response(url, token):
-    return {
+def redirect_response(url, token):
+    response = {
         'statusCode': 307,
         'headers': {
             'Location': url,
@@ -40,6 +42,8 @@ def get_redirect_response(url, token):
         },
         'body': None,
     }
+    print(response)
+    return response
 
 
 def get_cookie_string(token):
@@ -71,29 +75,30 @@ def get_restricted_data_use_agreement(user):
     return False
 
 
-def get_token(user):
+def get_token_payload(user):
     expiration_time = datetime.utcnow() + timedelta(seconds=COOKIE_DURATION_IN_SECONDS)
     payload = {
         'user-id': user['uid'],
         'restricted-data-use-agreement': get_restricted_data_use_agreement(user),
         'exp': expiration_time.strftime('%s'),
     }
-    token = jwt.encode(payload, JWT_KEY, JWT_ALGORITHM)
-    return token.decode()
+    return payload
 
 
 def lambda_handler(event, context):
     parms = event['queryStringParameters']
+    print(parms)
     #TODO handle error=&error_msg= case
-    #TODO log input, token payload, response?
 
     try:
         urs_token = get_urs_token(parms['code'])
     except InvalidGrantError as e:
-        return get_error_response(401, e.description)
+        return error_response(401, e.description)
 
     #TODO catch connection errors
     user = get_user(urs_token)
-    token = get_token(user)
+    token_payload = get_token_payload(user)
+    print(token_payload)
+    token = jwt.encode(token_payload, JWT_KEY, JWT_ALGORITHM).decode()
 
-    return get_redirect_response(parms['state'], token)
+    return redirect_response(parms['state'], token)
