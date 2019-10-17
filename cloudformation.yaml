@@ -54,6 +54,11 @@ Parameters:
   CertificateArn:
     Type: String
 
+  LogRetentionInDays:
+    Type: Number
+    MinValue: 1
+    Default: 180
+
 Outputs:
 
   ApiEndpoint:
@@ -65,7 +70,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}"
-      RetentionInDays: 30
+      RetentionInDays: !Ref LogRetentionInDays
 
   Role:
     Type: AWS::IAM::Role
