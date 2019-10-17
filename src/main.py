@@ -36,7 +36,6 @@ def get_redirect_response(url, token):
         'statusCode': 307,
         'headers': {
             'Location': url,
-            #TODO decode final cookie string
             'Set-Cookie': get_cookie_string(token),
         },
         'body': None,
@@ -80,7 +79,7 @@ def get_token(user):
         'exp': expiration_time.strftime('%s'),
     }
     token = jwt.encode(payload, JWT_KEY, JWT_ALGORITHM)
-    return token
+    return token.decode()
 
 
 def lambda_handler(event, context):
