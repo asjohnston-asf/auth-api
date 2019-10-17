@@ -24,7 +24,7 @@ SESSION = Session()
 def get_400_response():
     return {
         'statusCode': 400,
-        'body': None,
+        'body': 'The provided authorization code is invalid.',
     }
 
 
