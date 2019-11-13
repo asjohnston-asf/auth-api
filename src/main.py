@@ -79,8 +79,6 @@ def login(parms):
 
     if not parms.get('code'):
         return static_response(400, 'Missing required parameter: code')
-    if not parms.get('state'):
-        return static_response(400, 'Missing required parameter: state')
 
     try:
         urs_token = get_urs_token(parms['code'])
@@ -93,20 +91,31 @@ def login(parms):
     print(f"Token payload: {token_payload}")
     token = jwt.encode(token_payload, CONFIG['JwtPrivateKey'], CONFIG['JwtAlgorithm']).decode()
 
-    return redirect_response(parms['state'], token)
+    default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsProfileUri'])
+    url = parms.get('state', default_url)
+    return redirect_response(url, token)
+
+
+def logout(parms):
+    default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsLogoutUri'])
+    url = parms.get('state', default_url)
+    return redirect_response(url)
 
 
 def lambda_handler(event, context):
+    uri = event['resource']
+    print(f"URI: {uri})")
+
     parms = event['queryStringParameters']
     if parms is None:
         parms = {}
     print(f"Parameters: {parms}")
 
-    if event['resource'] == '/login':
+    if uri == '/login':
         response = login(parms)
-    if event['resource'] == '/logout':
-        response = redirect_response(parms.get('state', '/'))
-    if event['resource'] == '/key':
+    if uri == '/logout':
+        response = logout(parms)
+    if uri == '/key':
         response = static_response(200, CONFIG['JwtPublicKey'])
 
     print(f"Response: {response}")
