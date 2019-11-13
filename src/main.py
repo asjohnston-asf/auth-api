@@ -104,7 +104,7 @@ def logout(parms):
 
 def lambda_handler(event, context):
     uri = event['resource']
-    print(f"URI: {uri})")
+    print(f"Uri: {uri}")
 
     parms = event['queryStringParameters']
     if parms is None:
