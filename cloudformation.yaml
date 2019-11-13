@@ -161,74 +161,28 @@ Resources:
         paths:
           /login:
             get:
-              parameters:
-              - name: code
-                in: query
-                required: false
-              - name: state
-                in: query
-                required: false
-              - name: error
-                in: query
-                required: false
-              - name: error_msg
-                in: query
-                required: false
-              responses:
-                '307':
-                  description: success
-                default:
-                  description: error
-              x-amazon-apigateway-request-validator: parameters-only
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations"
                 contentHandling: CONVERT_TO_TEXT
                 httpMethod: POST
                 passthroughBehvaior: when_no_match
-                responses:
-                  default:
-                    statusCode: 200
           /logout:
             get:
-              parameters:
-              - name: state
-                in: query
-                required: false
-              responses:
-                '307':
-                  description: success
-                default:
-                  description: error
-              x-amazon-apigateway-request-validator: parameters-only
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations"
                 contentHandling: CONVERT_TO_TEXT
                 httpMethod: POST
                 passthroughBehvaior: when_no_match
-                responses:
-                  default:
-                    statusCode: 200
           /key:
             get:
-              responses:
-                default:
-                  description: success
-              x-amazon-apigateway-request-validator: parameters-only
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations"
                 contentHandling: CONVERT_TO_TEXT
                 httpMethod: POST
                 passthroughBehvaior: when_no_match
-                responses:
-                  default:
-                    statusCode: 200
-        x-amazon-apigateway-request-validators:
-          parameters-only:
-            validateRequestParameters: true
-            validateRequestBody: false
 
   DeploymentREPLACE_ME:
     Type: AWS::ApiGateway::Deployment
