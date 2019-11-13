@@ -18,12 +18,11 @@ URS = OAuth2Session(CONFIG['UrsClientId'], redirect_uri=CONFIG['UrsRedirectUri']
 SESSION = Session()
 
 
-def error_response(status_code, message):
+def static_response(status_code, message):
     response = {
         'statusCode': status_code,
         'body': message,
     }
-    print(f"Response: {response}")
     return response
 
 
@@ -36,7 +35,6 @@ def redirect_response(url, token=None):
         },
         'body': None,
     }
-    print(f"Response: {response}")
     return response
 
 
@@ -77,29 +75,25 @@ def get_token_payload(user):
 
 def login(parms):
     if 'error' in parms:
-        return error_response(401, parms.get('error_msg'))
+        return static_response(401, parms.get('error_msg'))
 
     if not parms.get('code'):
-        return error_response(400, 'Missing required parameter: code')
+        return static_response(400, 'Missing required parameter: code')
     if not parms.get('state'):
-        return error_response(400, 'Missing required parameter: state')
+        return static_response(400, 'Missing required parameter: state')
 
     try:
         urs_token = get_urs_token(parms['code'])
     except InvalidGrantError as e:
-        return error_response(401, e.description)
+        return static_response(401, e.description)
 
     #TODO catch connection errors
     user = get_user(urs_token)
     token_payload = get_token_payload(user)
     print(f"Token payload: {token_payload}")
-    token = jwt.encode(token_payload, CONFIG['JwtKey'], CONFIG['JwtAlgorithm']).decode()
+    token = jwt.encode(token_payload, CONFIG['JwtPrivateKey'], CONFIG['JwtAlgorithm']).decode()
 
     return redirect_response(parms['state'], token)
-
-
-def logout(parms):
-    return redirect_response(parms.get('state', '/'))
 
 
 def lambda_handler(event, context):
@@ -109,6 +103,11 @@ def lambda_handler(event, context):
     print(f"Parameters: {parms}")
 
     if event['resource'] == '/login':
-        return login(parms)
+        response = login(parms)
     if event['resource'] == '/logout':
-        return logout(parms)
+        response = redirect_response(parms.get('state', '/'))
+    if event['resource'] == '/key':
+        response = static_response(200, CONFIG['JwtPublicKey'])
+
+    print(f"Response: {response}")
+    return response

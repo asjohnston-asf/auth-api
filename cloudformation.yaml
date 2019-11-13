@@ -33,9 +33,13 @@ Parameters:
     MinValue: 0
     Default: 86400
 
-  JwtKey:
+  JwtPrivateKey:
     Type: String
     NoEcho: true
+
+  JwtPublicKey:
+    Type: String
+    Default: ""
 
   JwtAlgorithm:
     Type: String
@@ -76,7 +80,8 @@ Resources:
           "CookieName": "${CookieName}",
           "CookieDomain": "${CookieDomain}",
           "CookieDurationInSeconds": ${CookieDurationInSeconds},
-          "JwtKey": "${JwtKey}",
+          "JwtPrivateKey": "${JwtPrivateKey}",
+          "JwtPublicKey": "${JwtPublicKey}",
           "JwtAlgorithm": "${JwtAlgorithm}"
         }
 
@@ -195,6 +200,21 @@ Resources:
                   description: success
                 default:
                   description: error
+              x-amazon-apigateway-request-validator: parameters-only
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations"
+                contentHandling: CONVERT_TO_TEXT
+                httpMethod: POST
+                passthroughBehvaior: when_no_match
+                responses:
+                  default:
+                    statusCode: 200
+          /key:
+            get:
+              responses:
+                default:
+                  description: success
               x-amazon-apigateway-request-validator: parameters-only
               x-amazon-apigateway-integration:
                 type: aws_proxy
