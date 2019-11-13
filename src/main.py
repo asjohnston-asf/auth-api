@@ -27,7 +27,7 @@ def error_response(status_code, message):
     return response
 
 
-def redirect_response(url, token):
+def redirect_response(url, token=None):
     response = {
         'statusCode': 307,
         'headers': {
@@ -40,10 +40,13 @@ def redirect_response(url, token):
     return response
 
 
-def get_cookie_string(token):
+def get_cookie_string(token=None):
     cookie = SimpleCookie()
     cookie[CONFIG['CookieName']] = token
-    cookie[CONFIG['CookieName']]['expires'] = CONFIG['CookieDurationInSeconds']
+    if token:
+        cookie[CONFIG['CookieName']]['expires'] = CONFIG['CookieDurationInSeconds']
+    else:
+        cookie[CONFIG['CookieName']]['expires'] = 0
     cookie[CONFIG['CookieName']]['domain'] = CONFIG['CookieDomain']
     return cookie.output(header='')
 
@@ -96,7 +99,7 @@ def login(parms):
 
 
 def logout(parms):
-    return error_response(400, 'not implemented')
+    return redirect_response(parms.get('state', '/'))
 
 
 def lambda_handler(event, context):
