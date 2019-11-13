@@ -80,13 +80,13 @@ Resources:
           "JwtAlgorithm": "${JwtAlgorithm}"
         }
 
-  LogGroup:
+  LambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}"
       RetentionInDays: !Ref LogRetentionInDays
 
-  Role:
+  LambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Ref AWS::StackName
@@ -106,7 +106,7 @@ Resources:
             Action:
             - logs:CreateLogStream
             - logs:PutLogEvents
-            Resource: !GetAtt LogGroup.Arn
+            Resource: !GetAtt LambdaLogGroup.Arn
           - Effect: Allow
             Action: secretsmanager:GetSecretValue
             Resource: !Ref Secret
@@ -121,21 +121,28 @@ Resources:
           CONFIG_SECRET_ARN: !Ref Secret
       Handler: main.lambda_handler
       MemorySize: 128
-      Role: !GetAtt Role.Arn
+      Role: !GetAtt LambdaRole.Arn
       Runtime: python3.7
       Timeout: 30
 
-      #  CustomDomainName:
-      #    Type: AWS::ApiGateway::DomainName
-      #    Properties:
-      #      DomainName: !Ref DomainName
-      #      CertificateArn: !Ref CertificateArn
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Ref AWS::StackName
+      RetentionInDays: !Ref LogRetentionInDays
 
-      #  BasePathMapping:
-      #    Type: AWS::ApiGateway::BasePathMapping
-      #    Properties:
-      #      DomainName: !Ref CustomDomainName
-      #      RestApiId: !Ref RestApi
+  CustomDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      CertificateArn: !Ref CertificateArn
+
+  BasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref CustomDomainName
+      RestApiId: !Ref RestApi
+      Stage: !Ref Stage
 
   RestApi:
     Type: AWS::ApiGateway::RestApi
@@ -193,6 +200,9 @@ Resources:
       StageName: oauth
       RestApiId: !Ref RestApi
       DeploymentId: !Ref DeploymentREPLACE_ME
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiLogGroup.Arn
+        Format: $context.identity.sourceIp,$context.identity.caller,$context.identity.user,$context.requestTime,$context.httpMethod,$context.resourcePath,$context.protocol,$context.status,$context.responseLength,$context.requestId
 
   LambdaPermission:
     Type: AWS::Lambda::Permission
