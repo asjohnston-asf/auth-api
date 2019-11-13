@@ -72,7 +72,7 @@ Resources:
           "UrsTokenUri": "${UrsTokenUri}",
           "UrsClientId": "${UrsClientId}",
           "UrsClientPassword": "${UrsClientPassword}",
-          "UrsRedirectUri": "https://${DomainName}/oauth",
+          "UrsRedirectUri": "https://${DomainName}/login",
           "CookieName": "${CookieName}",
           "CookieDomain": "${CookieDomain}",
           "CookieDurationInSeconds": ${CookieDurationInSeconds},
@@ -154,7 +154,7 @@ Resources:
           title: oauth
           version: 0.0.1
         paths:
-          /:
+          /login:
             get:
               parameters:
               - name: code

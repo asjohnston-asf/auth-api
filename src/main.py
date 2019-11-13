@@ -72,18 +72,13 @@ def get_token_payload(user):
     return payload
 
 
-def lambda_handler(event, context):
-    parms = event['queryStringParameters']
-    if parms is None:
-        parms = {}
-    print(f"Parameters: {parms}")
-
+def login(parms):
     if 'error' in parms:
         return error_response(401, parms.get('error_msg'))
 
-    if 'code' not in parms:
+    if not parms.get('code'):
         return error_response(400, 'Missing required parameter: code')
-    if 'state' not in parms:
+    if not parms.get('state'):
         return error_response(400, 'Missing required parameter: state')
 
     try:
@@ -98,3 +93,19 @@ def lambda_handler(event, context):
     token = jwt.encode(token_payload, CONFIG['JwtKey'], CONFIG['JwtAlgorithm']).decode()
 
     return redirect_response(parms['state'], token)
+
+
+def logout(parms):
+    return error_response(400, 'not implemented')
+
+
+def lambda_handler(event, context):
+    parms = event['queryStringParameters']
+    if parms is None:
+        parms = {}
+    print(f"Parameters: {parms}")
+
+    if event['resource'] == '/login':
+        return login(parms)
+    if event['resource'] == '/logout':
+        return logout(parms)
