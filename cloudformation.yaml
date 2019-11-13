@@ -61,8 +61,11 @@ Parameters:
 
 Outputs:
 
-  ApiEndpoint:
-    Value: !Sub "https://${DomainName}/${Stage}/"
+  UrsRedirectUri:
+    Value: !Sub "https://${DomainName}/login"
+
+  DnsCname:
+    Value: !Sub "${RestApi}.execute-api.${AWS::Region}.amazonaws.com."
 
 Resources:
 
@@ -155,9 +158,6 @@ Resources:
       Name: !Ref AWS::StackName
       Body:
         openapi: 3.0.1
-        info:
-          title: oauth
-          version: 0.0.1
         paths:
           /login:
             get:
@@ -192,7 +192,7 @@ Resources:
   Stage:
     Type: AWS::ApiGateway::Stage
     Properties:
-      StageName: oauth
+      StageName: auth-api
       RestApiId: !Ref RestApi
       DeploymentId: !Ref DeploymentREPLACE_ME
       AccessLogSetting:
