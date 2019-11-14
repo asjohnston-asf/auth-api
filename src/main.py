@@ -98,8 +98,8 @@ def login(parms):
 
 def logout(parms):
     logout_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsLogoutUri'])
-    if parms.get('state'):
-        logout_url += '?redirect_uri=' + parms['state']
+    if parms.get('redirect_uri'):
+        logout_url += '?redirect_uri=' + parms['redirect_uri']
     return redirect_response(logout_url)
 
 
