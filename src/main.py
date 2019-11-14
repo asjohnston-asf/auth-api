@@ -88,7 +88,7 @@ def login(parms):
     #TODO catch connection errors
     user = get_user(urs_token)
     token_payload = get_token_payload(user)
-    print(f"Token payload: {token_payload}")
+    print(f'Token payload: {token_payload}')
     token = jwt.encode(token_payload, CONFIG['JwtPrivateKey'], CONFIG['JwtAlgorithm']).decode()
 
     default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsProfileUri'])
@@ -97,19 +97,19 @@ def login(parms):
 
 
 def logout(parms):
-    default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsLogoutUri'])
-    url = parms.get('state', default_url)
-    return redirect_response(url)
+    logout_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsLogoutUri'])
+    logout_url += '?redirect_uri=' + parms.get('state', '')
+    return redirect_response(logout_url)
 
 
 def lambda_handler(event, context):
     uri = event['resource']
-    print(f"Uri: {uri}")
+    print(f'Uri: {uri}')
 
     parms = event['queryStringParameters']
     if parms is None:
         parms = {}
-    print(f"Parameters: {parms}")
+    print(f'Parameters: {parms}')
 
     if uri == '/login':
         response = login(parms)
@@ -118,5 +118,5 @@ def lambda_handler(event, context):
     if uri == '/key':
         response = static_response(200, CONFIG['JwtPublicKey'])
 
-    print(f"Response: {response}")
+    print(f'Response: {response}')
     return response
