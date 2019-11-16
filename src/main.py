@@ -37,7 +37,7 @@ def login_response(url, token):
 
 def logout_response():
     headers = {
-        'Set-Cookie': get_cookie_string()
+        'Set-Cookie': get_cookie_string(),
     }
     return http_response(200, 'Logged Out', headers)
 
