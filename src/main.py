@@ -18,29 +18,28 @@ URS = OAuth2Session(CONFIG['UrsClientId'], redirect_uri=CONFIG['UrsRedirectUri']
 SESSION = Session()
 
 
-def static_response(status_code, message=None):
+def http_response(status_code, message=None, headers=None):
     response = {
         'statusCode': status_code,
         'body': message,
+        'headers': headers,
     }
     return response
 
 
 def login_response(url, token):
-    response = static_response(307)
-    response['headers'] = {
+    headers = {
         'Location': url,
         'Set-Cookie': get_cookie_string(token),
     }
-    return response
+    return http_response(307, headers=headers)
 
 
 def logout_response():
-    response = static_response(200, 'Logged Out')
-    response['headers'] = {
+    headers = {
         'Set-Cookie': get_cookie_string()
     }
-    return response
+    return http_response(200, 'Logged Out', headers)
 
 
 def get_cookie_string(token=None):
@@ -80,17 +79,17 @@ def get_token_payload(user):
 
 def login(parms):
     if 'error' in parms:
-        return static_response(401, parms.get('error_msg'))
+        return http_response(401, parms.get('error_msg'))
 
     if not parms.get('code'):
-        return static_response(400, 'Missing required parameter: code')
+        return http_response(400, 'Missing required parameter: code')
     if not parms.get('state'):
-        return static_response(400, 'Missing required parameter: state')
+        return http_response(400, 'Missing required parameter: state')
 
     try:
         urs_token = get_urs_token(parms['code'])
     except InvalidGrantError as e:
-        return static_response(401, e.description)
+        return http_response(401, e.description)
 
     #TODO catch connection errors
     user = get_user(urs_token)
@@ -115,7 +114,7 @@ def lambda_handler(event, context):
     if uri == '/logout':
         response = logout_response()
     if uri == '/key':
-        response = static_response(200, CONFIG['JwtPublicKey'])
+        response = http_response(200, CONFIG['JwtPublicKey'])
 
     print(f'Response: {response}')
     return response
