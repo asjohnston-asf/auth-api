@@ -18,7 +18,7 @@ URS = OAuth2Session(CONFIG['UrsClientId'], redirect_uri=CONFIG['UrsRedirectUri']
 SESSION = Session()
 
 
-def static_response(status_code, message):
+def static_response(status_code, message=None):
     response = {
         'statusCode': status_code,
         'body': message,
@@ -26,25 +26,19 @@ def static_response(status_code, message):
     return response
 
 
-def redirect_response(url, token=None):
-    response = {
-        'statusCode': 307,
-        'headers': {
-            'Location': url,
-            'Set-Cookie': get_cookie_string(token),
-        },
-        'body': None,
+def login_response(url, token):
+    response = static_response(307)
+    response['headers'] = {
+        'Location': url,
+        'Set-Cookie': get_cookie_string(token),
     }
     return response
 
 
 def logout_response():
-    response = {
-        'statusCode': 200,
-        'headers': {
-            'Set-Cookie': get_cookie_string(),
-        },
-        'body': 'Logged Out',
+    response = static_response(200, 'Logged Out')
+    response['headers'] = {
+        'Set-Cookie': get_cookie_string()
     }
     return response
 
@@ -104,7 +98,7 @@ def login(parms):
 
     default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsProfileUri'])
     url = parms.get('state', default_url)
-    return redirect_response(url, token)
+    return login_response(url, token)
 
 
 def lambda_handler(event, context):
