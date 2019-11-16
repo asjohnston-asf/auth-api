@@ -17,10 +17,6 @@ Parameters:
     Type: String
     Default: /profile
 
-  UrsLogoutUri:
-    Type: String
-    Default: /logout
-
   UrsClientId:
     Type: String
 
@@ -86,7 +82,6 @@ Resources:
           "UrsHostname": "${UrsHostname}",
           "UrsTokenUri": "${UrsTokenUri}",
           "UrsProfileUri": "${UrsProfileUri}",
-          "UrsLogoutUri": "${UrsLogoutUri}",
           "UrsClientId": "${UrsClientId}",
           "UrsClientPassword": "${UrsClientPassword}",
           "UrsRedirectUri": "https://${DomainName}/login",

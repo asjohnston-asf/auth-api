@@ -38,6 +38,17 @@ def redirect_response(url, token=None):
     return response
 
 
+def logout_response():
+    response = {
+        'statusCode': 200,
+        'headers': {
+            'Set-Cookie': get_cookie_string(),
+        },
+        'body': 'Logged Out',
+    }
+    return response
+
+
 def get_cookie_string(token=None):
     cookie = SimpleCookie()
     cookie[CONFIG['CookieName']] = token
@@ -96,13 +107,6 @@ def login(parms):
     return redirect_response(url, token)
 
 
-def logout(parms):
-    logout_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsLogoutUri'])
-    if parms.get('redirect_uri'):
-        logout_url += '?redirect_uri=' + parms['redirect_uri']
-    return redirect_response(logout_url)
-
-
 def lambda_handler(event, context):
     uri = event['resource']
     print(f'Uri: {uri}')
@@ -115,7 +119,7 @@ def lambda_handler(event, context):
     if uri == '/login':
         response = login(parms)
     if uri == '/logout':
-        response = logout(parms)
+        response = logout_response()
     if uri == '/key':
         response = static_response(200, CONFIG['JwtPublicKey'])
 
