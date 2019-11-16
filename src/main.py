@@ -84,6 +84,8 @@ def login(parms):
 
     if not parms.get('code'):
         return static_response(400, 'Missing required parameter: code')
+    if not parms.get('state'):
+        return static_response(400, 'Missing required parameter: state')
 
     try:
         urs_token = get_urs_token(parms['code'])
@@ -96,9 +98,7 @@ def login(parms):
     print(f'Token payload: {token_payload}')
     token = jwt.encode(token_payload, CONFIG['JwtPrivateKey'], CONFIG['JwtAlgorithm']).decode()
 
-    default_url = urljoin(CONFIG['UrsHostname'], CONFIG['UrsProfileUri'])
-    url = parms.get('state', default_url)
-    return login_response(url, token)
+    return login_response(parms['state'], token)
 
 
 def lambda_handler(event, context):

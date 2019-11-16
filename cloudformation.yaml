@@ -13,10 +13,6 @@ Parameters:
     Type: String
     Default: /oauth/token
 
-  UrsProfileUri:
-    Type: String
-    Default: /profile
-
   UrsClientId:
     Type: String
 
@@ -81,7 +77,6 @@ Resources:
         {
           "UrsHostname": "${UrsHostname}",
           "UrsTokenUri": "${UrsTokenUri}",
-          "UrsProfileUri": "${UrsProfileUri}",
           "UrsClientId": "${UrsClientId}",
           "UrsClientPassword": "${UrsClientPassword}",
           "UrsRedirectUri": "https://${DomainName}/login",
