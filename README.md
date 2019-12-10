@@ -6,13 +6,15 @@ This API implements Earthdata Login (EDL) authentication via JSON Web Tokens (JW
 
 [Earthdata Login OAuth/SSO Client Implementation](https://urs.earthdata.nasa.gov/sso_client_impl)
 
+[Earthdata Login Integration](https://wiki.earthdata.nasa.gov/display/EL/Earthdata+Login+Integration)
+
 [Introduction to JSON Web Tokens](https://jwt.io/introduction/)
 
 # Endpoints
 
 ## /login
 
-Implements an EDL redirect URI.  Validates a client's Earthdata Login session and vends a JWT session cookie.
+Implements an EDL redirect URI.  Validates a client's EDL session and vends a JWT session cookie.
 
 This endpoint is not intended to be invoked directly by applications.  Rather, applications should forward clients to the  [/oauth/authorize](https://wiki.earthdata.nasa.gov/display/EL/API+Documentation#APIDocumentation-oauth-authorize) endpoint of the EDL API and provide this URL as the value for the `redirect_uri` parameter.
 
