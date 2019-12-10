@@ -18,8 +18,6 @@ Implements an EDL redirect URI.  Validates a client's EDL session and vends a JW
 
 This endpoint is not intended to be invoked directly by applications.  Rather, applications should forward clients to the  [/oauth/authorize](https://wiki.earthdata.nasa.gov/display/EL/API+Documentation#APIDocumentation-oauth-authorize) endpoint of the EDL API and provide this URL as the value for the `redirect_uri` parameter.
 
-<urs_host>/oauth/authorize?response=code&state=<state>&redirect_uri=<apiHost>/login&client_id=<client_id>[&app_type=401]
-
 code (required) - authorization code from the EDL server
 
 state (required) - url to redirect to after successful login
